@@ -7,7 +7,7 @@ use the computer that can run this program,don't use devices that cannot .
 
 imagine the screen can be streched bigger like a piece of cloth, 
 
-consisted of red,green,blue lighthat(only two states,on or off),
+consisted of red,green,blue lights(only two states,on or off),
 
 and open this program.
 
