@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QPaintEvent>
+#include <qt_windows.h>
 
 namespace Ui {
 class MainWindow;
@@ -11,6 +12,18 @@ class MainWindow;
 class MainWindow : public QWidget
 {
     Q_OBJECT
+    public:
+    void keyDown(DWORD key);
+       void keyUp(DWORD key);
+
+       static void pressKey(DWORD vkKeyCode);
+   private slots:
+       void doMultimedia(DWORD vkKeyCode);
+   private:
+       Ui::MainWindow *ui;
+       HHOOK hhkLowLevelKybd;
+       bool bWinKey;
+       bool dealS=true;
 
 public:
     int keyCo=0;
@@ -25,6 +38,7 @@ public:
 bool eventFilter(QObject *obj, QEvent *e);
   public slots:
     void onT();
+
 
 };
 

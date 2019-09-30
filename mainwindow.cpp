@@ -9,16 +9,95 @@
 #include "qpainter.h"
 #include "qcursor.h"
 #include "QDesktopWidget"
+#include "QSettings"
+MainWindow * mwReference;
+
+LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    if (nCode == HC_ACTION)
+    {
+        switch (wParam)
+        {
+            // Pass KeyDown/KeyUp messages for Qt class to logicize
+            case WM_KEYDOWN:
+                mwReference->keyDown(PKBDLLHOOKSTRUCT(lParam)->vkCode);
+            break;
+            case WM_KEYUP:
+                mwReference->keyUp(PKBDLLHOOKSTRUCT(lParam)->vkCode);
+            break;
+        }
+    }
+    return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
+
+
+
+void MainWindow::keyDown(DWORD key)
+{
+    if(key == VK_LSHIFT || key == VK_RSHIFT)
+    {
+        bWinKey = true;
+        doMultimedia(key);
+    }
+    if(key == 0x5a || key == 0x53 || key == 0x44 || key == 0x57 || key == 0x41 || key == 0x51 || key == 0x45)
+        doMultimedia(key);
+
+}
+
+void MainWindow::keyUp(DWORD key)
+{
+    if(key == VK_LSHIFT || key == VK_RSHIFT)
+        bWinKey = false;
+}
+
+void MainWindow::pressKey(DWORD vkKeyCode)
+{
+    INPUT Input;
+    // Set up a generic keyboard event.
+    Input.type = INPUT_KEYBOARD;
+    Input.ki.wScan = 0;
+    Input.ki.time = 0;
+    Input.ki.dwExtraInfo = 0;
+    Input.ki.dwFlags = 0;
+    Input.ki.wVk = vkKeyCode;
+    SendInput(1, &Input, sizeof(INPUT));
+}
+
+void MainWindow::doMultimedia(DWORD vkKeyCode)
+{
+
+    if(!bWinKey or !dealS) return;
+    if (vkKeyCode == 0x5a)
+    refre = !refre;
+
+    if(vkKeyCode==0x44)
+        conG+=4;
+    if(vkKeyCode==0x53)
+        conGy+=4;
+    if(vkKeyCode==0x41 and conG>4)
+        conG-=4;
+    if(vkKeyCode==0x57 and conGy>4)
+        conGy-=4;
+    if(vkKeyCode==0x45)
+        conL+=3;
+    if(vkKeyCode==0x51 and conL>3)
+        conL-=3;
+}
+
+
 MainWindow::MainWindow(QWidget *parent) :
     QWidget(parent)
 {
-
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(onT()));
     timer->start(50);
     setWindowFlags(Qt::WindowStaysOnTopHint|Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
     QCoreApplication::instance()->installEventFilter(this);
+      mwReference = this;
+         bWinKey     = false;
+
+         hhkLowLevelKybd = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, 0, 0);
 }
 void MainWindow::dd(int v,int i,int j,int nn, QImage* im,int shx,int shy)
 {
@@ -47,6 +126,7 @@ void MainWindow::dd(int v,int i,int j,int nn, QImage* im,int shx,int shy)
 }
 bool MainWindow::eventFilter(QObject *obj, QEvent *e)
 {
+
     if (e->type()==QEvent::KeyRelease )
     {
         keyCo++;
@@ -69,6 +149,8 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *e)
                 QApplication::quit();
             if(keyEvent->key()==Qt::Key_F)
                 refre=!refre;
+            if(keyEvent->key()==Qt::Key_P)
+                dealS=!dealS;
         }
     }
     return QWidget::eventFilter( obj, e );
@@ -124,20 +206,17 @@ void MainWindow::paintEvent(QPaintEvent*)
             dd(b,i,j,3,im,shx,shy);
         }}
     painter.drawImage(QRect(0,0,conG*conL,conGy*conL),*im);
-    qDebug()<<"hehe"<<QDateTime::currentDateTime();
+    //qDebug()<<"hehe"<<QDateTime::currentDateTime();
     delete  imp;
     delete  im;
 }
 void MainWindow::onT()
 {
-
     repaint();
-
-    //qDebug()<<"hehe"<<QDateTime::currentDateTime();
-
-
 }
+
+
 MainWindow::~MainWindow()
 {
-
+    UnhookWindowsHookEx(hhkLowLevelKybd);
 }
