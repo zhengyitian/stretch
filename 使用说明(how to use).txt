@@ -1,3 +1,4 @@
+窗口被选中时
 esc:退出(quit)
 s：上下变大(bigger vertical)
 w：上下变小(smaller vertical)
@@ -6,3 +7,7 @@ a:左右变小(smaller horizontal)
 e:像素点变大(pixel bigger)
 q:像素点变小(pixel smaller)
 f:暂停/恢复(pause/continue)
+
+窗口没被选中时
+s,w,d,a,e,q 加左shift
+z+左shift:暂停/恢复(pause/continue)
